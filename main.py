@@ -34,13 +34,92 @@ menuPositions = {
     "credits":{
         "x":250,
         "y":300
+    },
+    "quit":{
+        "x":250,
+        "y":350
     }
 }
 
 class gameMenu:
     def __init__(self):
         self.state = "start"
-        self.cursorX =  4
+        self.mode = "main"
+        self.cursorX =  menuPositions["start"]["x"]-20
+        self.cursorY = menuPositions["start"]["y"]
+    
+    def goDown(self):
+        if(self.state == "start"):
+            self.state = "instructions"
+            self.cursorX =  menuPositions["instructions"]["x"]-20
+            self.cursorY = menuPositions["instructions"]["y"]
+
+        elif(self.state == "instructions"):
+            self.state = "credits"
+            self.cursorX =  menuPositions["credits"]["x"]-20
+            self.cursorY = menuPositions["credits"]["y"]
+        
+        elif(self.state == "credits"):
+            self.state = "quit"
+            self.cursorX =  menuPositions["quit"]["x"]-20
+            self.cursorY = menuPositions["quit"]["y"]
+    
+    def goUp(self):
+        if(self.state == "instructions"):
+            self.state = "start"
+            self.cursorX =  menuPositions["start"]["x"]-20
+            self.cursorY = menuPositions["start"]["y"]
+
+        elif(self.state == "credits"):
+            self.state = "instructions"
+            self.cursorX =  menuPositions["instructions"]["x"]-20
+            self.cursorY = menuPositions["instructions"]["y"]
+        
+        elif(self.state == "quit"):
+            self.state = "credits"
+            self.cursorX =  menuPositions["credits"]["x"]-20
+            self.cursorY = menuPositions["credits"]["y"]
+    
+    def displayInstructions(self):
+        instructions1 = font.render("Welcome to Corona Wars!!", True, (0,0,0))
+        instructions2 = font.render("Use 'SPACE' to shoot drops", True, (0,0,0))
+        instructions3 = font.render("Use left and right key to", True, (0,0,0))
+        instructions4 = font.render("move sanitizer",True,(0,0,0))
+
+        returnInstruct = font.render("Press 'ENTER' to go Back", True, (0,0,0))
+        screen.blit(instructions1,(200,200))
+        screen.blit(instructions2,(200,240))
+        screen.blit(instructions3,(200,280))
+        screen.blit(instructions4,(200,320))
+        screen.blit(returnInstruct,(200,400))
+
+    
+    def displayCredits(self):
+        credit1 = font.render("Developed by Samarth Singh", True, (0,0,0))
+        credit2 = font.render("Inspired by space arcade", True, (0,0,0))
+        credit3 = font.render("Developed during Hash-Cade 2021",True,(0,0,0))
+
+        returnInstruct = font.render("Press 'ENTER' to go Back", True, (0,0,0))
+        screen.blit(credit1,(200,200))
+        screen.blit(credit2,(200,240))
+        screen.blit(credit3,(200,280))
+        screen.blit(returnInstruct,(200,400))
+    
+    def displayMenu(self):
+        item1 = font.render("Start Game", True,(0,0,0))
+        item2 = font.render("Instructions", True, (0,0,0))
+        item3 = font.render("Credits", True, (0,0,0))
+        item4 = font.render("Quit", True, (0,0,0))
+        cursor = font.render(">",True, (0,0,0))
+
+        screen.blit(item1, (menuPositions["start"]["x"], menuPositions["start"]["y"]))
+        screen.blit(item2, (menuPositions["instructions"]["x"], menuPositions["instructions"]["y"]))
+        screen.blit(item3, (menuPositions["credits"]["x"], menuPositions["credits"]["y"]))
+        screen.blit(item4, (menuPositions["quit"]["x"], menuPositions["quit"]["y"]))
+        screen.blit(cursor, (self.cursorX, self.cursorY))
+
+        
+        
 
 
 
@@ -122,101 +201,146 @@ levelChange = True
 levelTimer = 0
 gameOver = False
 gameWin = False
+showMenu = True
+startGame = False
+
+gm = gameMenu()
 
 while running:
 
     screen.fill((0,0,0))
     screen.blit(backgroundImage,(0,0))
-    if( (not levelChange) and (not gameOver) and (not gameWin)):
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                running = False
+    if(startGame):
+        if( (not levelChange) and (not gameOver) and (not gameWin)):
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    running = False
+                
+                elif event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_LEFT:
+                        changeX = -0.5
+                    if event.key == pygame.K_RIGHT:
+                        changeX = 0.5
+                    if event.key == pygame.K_SPACE:
+                        if bulletState == "ready":
+                            shootSound = mixer.Sound("shoot.wav")
+                            shootSound.play()
+                            bulletX = initX
+                            bulletY = initY
+                            fireBullet(bulletX, bulletY)
+                
+                elif event.type == pygame.KEYUP:
+                    if event.key == pygame.K_LEFT or event.key == pygame.K_RIGHT:
+                        changeX = 0
             
-            elif event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_LEFT:
-                    changeX = -0.5
-                if event.key == pygame.K_RIGHT:
-                    changeX = 0.5
-                if event.key == pygame.K_SPACE:
-                    if bulletState == "ready":
-                        shootSound = mixer.Sound("shoot.wav")
-                        shootSound.play()
-                        bulletX = initX
-                        bulletY = initY
-                        fireBullet(bulletX, bulletY)
+            initX += changeX
+            if(initX < 0):
+                initX = 0
+            if(initX > 736):
+                initX = 736
+            for i in range(levelAttr[currLevel-1][1]):
+                if(enemyState[i]):
+                    if(enemyInitY[i]>400):
+                        gameOver = True
+                        break
+                    enemyInitX[i] += enemyXchange[i]
+                    if(enemyInitX[i] < 0):
+                        enemyXchange[i] = -enemyXchange[i]
+                        enemyInitY[i] += enemyYchange[i]
+                    if(enemyInitX[i] > 736):
+                        enemyXchange[i] = -enemyXchange[i]
+                        enemyInitY[i] += enemyYchange[i]
             
-            elif event.type == pygame.KEYUP:
-                if event.key == pygame.K_LEFT or event.key == pygame.K_RIGHT:
-                    changeX = 0
-        
-        initX += changeX
-        if(initX < 0):
-            initX = 0
-        if(initX > 736):
-            initX = 736
-        for i in range(levelAttr[currLevel-1][1]):
-            if(enemyState[i]):
-                if(enemyInitY[i]>400):
-                    gameOver = True
-                    break
-                enemyInitX[i] += enemyXchange[i]
-                if(enemyInitX[i] < 0):
-                    enemyXchange[i] = -enemyXchange[i]
-                    enemyInitY[i] += enemyYchange[i]
-                if(enemyInitX[i] > 736):
-                    enemyXchange[i] = -enemyXchange[i]
-                    enemyInitY[i] += enemyYchange[i]
-        
-        if(bulletY<0):
-            bulletY = 480
-            bulletState = "ready"
+            if(bulletY<0):
+                bulletY = 480
+                bulletState = "ready"
 
-        if(bulletState == "fire"):
-            fireBullet(bulletX, bulletY)
-            bulletY -= 0.7
+            if(bulletState == "fire"):
+                fireBullet(bulletX, bulletY)
+                bulletY -= 0.7
 
 
-        for i in range(levelAttr[currLevel-1][1]):
-            if(enemyState[i]):
-                collisionState = isCollision(bulletX, bulletY, enemyInitX[i], enemyInitY[i])
-                if(collisionState):
-                    killSound = mixer.Sound("kill.wav")
-                    killSound.play()
-                    bulletX = 370
-                    bulletY = 480
-                    bulletState = "ready"
-                    scoreValue += 1
-                    enemyState[i] = 0
-                    enemiesAlive -= 1
+            for i in range(levelAttr[currLevel-1][1]):
+                if(enemyState[i]):
+                    collisionState = isCollision(bulletX, bulletY, enemyInitX[i], enemyInitY[i])
+                    if(collisionState):
+                        killSound = mixer.Sound("kill.wav")
+                        killSound.play()
+                        bulletX = 370
+                        bulletY = 480
+                        bulletState = "ready"
+                        scoreValue += 1
+                        enemyState[i] = 0
+                        enemiesAlive -= 1
 
-        showScore(textX,textY)
-        player(initX,initY)
-        for i in range(levelAttr[currLevel-1][1]):
-            if(enemyState[i]):
-                enemy(enemyInitX[i], enemyInitY[i], i)
-        if(enemiesAlive == 0 and currLevel<5):
-            currLevel += 1
-            levelChange = True
-        elif(enemiesAlive == 0):
-            gameWin = True
-    elif(levelChange):
-        showLevel(250,250)
-        levelTimer += 1
-        if(levelTimer>1000):
-            levelTimer = 0
-            InitializeEnemies(levelAttr[currLevel-1][1], currLevel)
-            print(enemyInitX)
-            enemiesAlive = levelAttr[currLevel-1][1]
-            levelChange = False
-    elif(gameOver):
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                running = False
-        showOver(250, 250)
-    elif(gameWin):
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                running = False
-        showWin(250, 250)
-    
+            showScore(textX,textY)
+            player(initX,initY)
+            for i in range(levelAttr[currLevel-1][1]):
+                if(enemyState[i]):
+                    enemy(enemyInitX[i], enemyInitY[i], i)
+            if(enemiesAlive == 0 and currLevel<5):
+                currLevel += 1
+                levelChange = True
+            elif(enemiesAlive == 0):
+                gameWin = True
+        elif(levelChange):
+            showLevel(250,250)
+            levelTimer += 1
+            if(levelTimer>1000):
+                levelTimer = 0
+                InitializeEnemies(levelAttr[currLevel-1][1], currLevel)
+                print(enemyInitX)
+                enemiesAlive = levelAttr[currLevel-1][1]
+                levelChange = False
+        elif(gameOver):
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    running = False
+            showOver(250, 250)
+        elif(gameWin):
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    running = False
+            showWin(250, 250)
+    elif(showMenu):
+        downPress = False
+        upPress = False
+        if(gm.mode == "main"):
+            gm.displayMenu()
+            for event in pygame.event.get():
+                    if event.type == pygame.QUIT:
+                        running = False
+                    
+                    elif event.type == pygame.KEYDOWN:
+                        if event.key == pygame.K_DOWN:
+                            downPress = True
+                        if event.key == pygame.K_UP:
+                            upPress = True
+                        if event.key == pygame.K_RETURN:
+                            if(gm.state == "start"):
+                                startGame = True
+                                showMenu = False
+                            elif(gm.state == "instructions"):
+                                gm.mode = "option"
+                            elif(gm.state == "credits"):
+                                gm.mode = "option"
+                            elif(gm.state == "quit"):
+                                running = False
+            if(downPress):
+                gm.goDown()
+            if(upPress):
+                gm.goUp()
+        else:
+            if(gm.state == "instructions"):
+                gm.displayInstructions()
+            elif(gm.state == "credits"):
+                gm.displayCredits()
+            for event in pygame.event.get():
+                    if event.type == pygame.QUIT:
+                        running = False
+                    elif event.type == pygame.KEYDOWN:
+                        if(event.key == pygame.K_RETURN):
+                            gm.mode = "main"
+
+            
     pygame.display.update()

@@ -8,8 +8,8 @@ pygame.display.set_caption("Corona Wars")
 icon = pygame.image.load("logo.png")
 pygame.display.set_icon(icon)
 
-levelAttr = [[0.5,5],[0.6,6],[0.7,7],[0.8,8],[0.7,8]]
-currLevel = 1
+levelAttr = [[0.5,5],[0.6,6],[0.7,7],[0.8,8],[0.7,6]]
+currLevel = 5
 
 scoreValue = 0
 font = pygame.font.Font("gameFont.ttf", 32)
@@ -50,6 +50,8 @@ class gameMenu:
         self.cursorY = menuPositions["start"]["y"]
     
     def goDown(self):
+        shootSound = mixer.Sound("shoot.wav")
+        shootSound.play()
         if(self.state == "start"):
             self.state = "instructions"
             self.cursorX =  menuPositions["instructions"]["x"]-20
@@ -66,6 +68,8 @@ class gameMenu:
             self.cursorY = menuPositions["quit"]["y"]
     
     def goUp(self):
+        shootSound = mixer.Sound("shoot.wav")
+        shootSound.play()
         if(self.state == "instructions"):
             self.state = "start"
             self.cursorX =  menuPositions["start"]["x"]-20
@@ -139,8 +143,11 @@ class BossVillian:
         self.bossYchange = 20
         self.bossState = "good"
         self.dizzyTimer = 0
+        self.sound = mixer.Sound("boss.wav")
     
     def show(self):
+        self.sound.set_volume(0.1)
+        self.sound.play()
         if(self.bossState == "dizzy"):
             self.dizzyTimer += 1
             screen.blit(self.dizzyImg,(self.bossX,self.bossY))
@@ -403,6 +410,8 @@ while running:
                         if event.key == pygame.K_UP:
                             upPress = True
                         if event.key == pygame.K_RETURN:
+                            shootSound = mixer.Sound("shoot.wav")
+                            shootSound.play()
                             if(gm.state == "start"):
                                 startGame = True
                                 showMenu = False
@@ -426,6 +435,8 @@ while running:
                         running = False
                     elif event.type == pygame.KEYDOWN:
                         if(event.key == pygame.K_RETURN):
+                            shootSound = mixer.Sound("shoot.wav")
+                            shootSound.play()
                             gm.mode = "main"
 
             

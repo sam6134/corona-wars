@@ -8,12 +8,13 @@ pygame.display.set_caption("Corona Wars")
 icon = pygame.image.load("logo.png")
 pygame.display.set_icon(icon)
 
-levelAttr = [[0.5,5],[0.6,6],[0.7,7],[0.8,8],[0.8,9]]
+levelAttr = [[0.5,5],[0.6,6],[0.7,7],[0.8,8],[0.7,8]]
 currLevel = 1
 
 scoreValue = 0
 font = pygame.font.Font("gameFont.ttf", 32)
 levelFont = pygame.font.Font("gameFont.ttf", 64)
+titleFont = pygame.font.Font("gameFont.ttf", 72)
 textX = 10
 textY = 10
 
@@ -81,12 +82,14 @@ class gameMenu:
             self.cursorY = menuPositions["credits"]["y"]
     
     def displayInstructions(self):
+        title = titleFont.render("- Corona Wars -", True, (0,0,0))
         instructions1 = font.render("Welcome to Corona Wars!!", True, (0,0,0))
         instructions2 = font.render("Use 'SPACE' to shoot drops", True, (0,0,0))
         instructions3 = font.render("Use left and right key to", True, (0,0,0))
         instructions4 = font.render("move sanitizer",True,(0,0,0))
 
         returnInstruct = font.render("Press 'ENTER' to go Back", True, (0,0,0))
+        screen.blit(title, (100,50))
         screen.blit(instructions1,(200,200))
         screen.blit(instructions2,(200,240))
         screen.blit(instructions3,(200,280))
@@ -95,23 +98,28 @@ class gameMenu:
 
     
     def displayCredits(self):
+        title = titleFont.render("- Corona Wars -", True, (0,0,0))
         credit1 = font.render("Developed by Samarth Singh", True, (0,0,0))
         credit2 = font.render("Inspired by space arcade", True, (0,0,0))
         credit3 = font.render("Developed during Hash-Cade 2021",True,(0,0,0))
 
         returnInstruct = font.render("Press 'ENTER' to go Back", True, (0,0,0))
+        screen.blit(title, (100,50))
         screen.blit(credit1,(200,200))
         screen.blit(credit2,(200,240))
         screen.blit(credit3,(200,280))
         screen.blit(returnInstruct,(200,400))
     
     def displayMenu(self):
+        title = titleFont.render("- Corona Wars -", True, (0,0,0))
+
         item1 = font.render("Start Game", True,(0,0,0))
         item2 = font.render("Instructions", True, (0,0,0))
         item3 = font.render("Credits", True, (0,0,0))
         item4 = font.render("Quit", True, (0,0,0))
         cursor = font.render(">",True, (0,0,0))
 
+        screen.blit(title, (100,50))
         screen.blit(item1, (menuPositions["start"]["x"], menuPositions["start"]["y"]))
         screen.blit(item2, (menuPositions["instructions"]["x"], menuPositions["instructions"]["y"]))
         screen.blit(item3, (menuPositions["credits"]["x"], menuPositions["credits"]["y"]))
@@ -120,7 +128,36 @@ class gameMenu:
 
         
         
+class BossVillian:
+    def __init__(self):
+        self.Img = pygame.image.load("boss.png")
+        self.dizzyImg = pygame.image.load("dizzy.png")
+        self.bossX = random.randint(200,400)
+        self.bossY = random.randint(50,60)
+        self.health = 5
+        self.bossXchange = 0.5
+        self.bossYchange = 20
+        self.bossState = "good"
+        self.dizzyTimer = 0
+    
+    def show(self):
+        if(self.bossState == "dizzy"):
+            self.dizzyTimer += 1
+            screen.blit(self.dizzyImg,(self.bossX,self.bossY))
+            if(self.dizzyTimer > 50):
+                self.dizzyTimer = 0
+                self.bossState="good"
+        else:
+            screen.blit(self.Img,(self.bossX,self.bossY))
 
+
+def isbossHit(bulletX, bulletY, bossX, bossY):
+    x1,y1 = bossX+128, bossY+128
+    distance = (bulletX - x1)**2 + (bulletY - y1)**2
+    distance = distance**(0.5)
+    if(distance <= 128):
+        return True
+    return False
 
 
 enemyImgs = []
@@ -159,7 +196,10 @@ initX = 370
 initY = 480
 
 def showLevel(x,y):
-    level = levelFont.render("Level- "+str(currLevel),True,(0,0,0))
+    if(currLevel < 5):
+        level = levelFont.render("Level- "+str(currLevel),True,(0,0,0))
+    else:
+        level = levelFont.render("Boss Level",True,(0,0,0))
     screen.blit(level,(x,y))
 
 def showScore(x,y):
@@ -205,6 +245,7 @@ showMenu = True
 startGame = False
 
 gm = gameMenu()
+bv = BossVillian()
 
 while running:
 
@@ -250,7 +291,20 @@ while running:
                     if(enemyInitX[i] > 736):
                         enemyXchange[i] = -enemyXchange[i]
                         enemyInitY[i] += enemyYchange[i]
+
+            if(currLevel == 5 and bv.health > 0):
+                if(bv.bossY > 200):
+                    gameOver = True
+                else:
+                    bv.bossX += bv.bossXchange
+                    if(bv.bossX < 0):
+                        bv.bossXchange = -bv.bossXchange
+                        bv.bossY += bv.bossYchange
+                    if(bv.bossX > 600):
+                        bv.bossXchange = -bv.bossXchange
+                        bv.bossY += bv.bossYchange
             
+
             if(bulletY<0):
                 bulletY = 480
                 bulletState = "ready"
@@ -272,16 +326,32 @@ while running:
                         scoreValue += 1
                         enemyState[i] = 0
                         enemiesAlive -= 1
+            
+            if(currLevel == 5 and bv.health>0):
+                bossHit = isbossHit(bulletX, bulletY, bv.bossX, bv.bossY)
+                if(bossHit):
+                    killSound = mixer.Sound("kill.wav")
+                    killSound.play()
+                    bulletX = 370
+                    bulletY = 480
+                    bulletState = "ready"
+                    scoreValue += 1
+                    bv.health -= 1
+                    bv.bossState = "dizzy"
 
             showScore(textX,textY)
             player(initX,initY)
+
+            if(currLevel == 5 and bv.health > 0):
+                bv.show()
+
             for i in range(levelAttr[currLevel-1][1]):
                 if(enemyState[i]):
                     enemy(enemyInitX[i], enemyInitY[i], i)
             if(enemiesAlive == 0 and currLevel<5):
                 currLevel += 1
                 levelChange = True
-            elif(enemiesAlive == 0):
+            elif(enemiesAlive == 0 and bv.health == 0):
                 gameWin = True
         elif(levelChange):
             showLevel(250,250)
@@ -296,11 +366,27 @@ while running:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     running = False
+                elif event.type == pygame.KEYDOWN:
+                        if(event.key == pygame.K_RETURN):
+                            showMenu = True
+                            startGame = False
+                            gameOver = False
+                            currLevel = 1
+                            levelChange = True
+                            scoreValue = 0
             showOver(250, 250)
         elif(gameWin):
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     running = False
+                elif event.type == pygame.KEYDOWN:
+                        if(event.key == pygame.K_RETURN):
+                            showMenu = True
+                            startGame = False
+                            gameWin = False
+                            currLevel = 1
+                            levelChange = True
+                            scoreValue = 0
             showWin(250, 250)
     elif(showMenu):
         downPress = False

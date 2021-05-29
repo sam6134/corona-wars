@@ -8,11 +8,13 @@ pygame.display.set_caption("Corona Wars")
 icon = pygame.image.load("logo.png")
 pygame.display.set_icon(icon)
 
-levelAttr = [[0.5,5],[0.6,6],[0.7,7],[0.8,8],[0.7,6]]
-currLevel = 5
+levelAttr = [[0.5,5],[0.6,6],[0.7,7],[0.8,7],[0.7,6]]
+currLevel = 1
 
+numBullets = 10
 scoreValue = 0
 font = pygame.font.Font("gameFont.ttf", 32)
+instructionFont = pygame.font.Font("gameFont.ttf",24)
 levelFont = pygame.font.Font("gameFont.ttf", 64)
 titleFont = pygame.font.Font("gameFont.ttf", 72)
 textX = 10
@@ -87,27 +89,32 @@ class gameMenu:
     
     def displayInstructions(self):
         title = titleFont.render("- Corona Wars -", True, (0,0,0))
-        instructions1 = font.render("Welcome to Corona Wars!!", True, (0,0,0))
-        instructions2 = font.render("Use 'SPACE' to shoot drops", True, (0,0,0))
-        instructions3 = font.render("Use left and right key to", True, (0,0,0))
-        instructions4 = font.render("move sanitizer",True,(0,0,0))
+        instructions1 = instructionFont.render("        Welcome to Corona Wars!!", True, (0,0,0))
+        instructions2 = instructionFont.render("* Use 'SPACE' to shoot drops", True, (0,0,0))
+        instructions3 = instructionFont.render("* Use left and right key to move sanitizer.", True, (0,0,0))
+        instructions4 = instructionFont.render("* For each level you are given 10 drops.",True,(0,0,0))
+        instructions5 = instructionFont.render("* Collect powerups like masks and vaccines" ,True, (0,0,0))
+        instructions6 = instructionFont.render("* Powerups increase drop count",True,(0,0,0))
 
-        returnInstruct = font.render("Press 'ENTER' to go Back", True, (0,0,0))
+
+        returnInstruct = instructionFont.render("     Press 'ENTER' to go Back", True, (0,0,0))
         screen.blit(title, (100,50))
         screen.blit(instructions1,(200,200))
-        screen.blit(instructions2,(200,240))
-        screen.blit(instructions3,(200,280))
-        screen.blit(instructions4,(200,320))
+        screen.blit(instructions2,(200,230))
+        screen.blit(instructions3,(200,260))
+        screen.blit(instructions4,(200,290))
+        screen.blit(instructions5,(200,320))
+        screen.blit(instructions6,(200,350))
         screen.blit(returnInstruct,(200,400))
 
     
     def displayCredits(self):
         title = titleFont.render("- Corona Wars -", True, (0,0,0))
-        credit1 = font.render("Developed by Samarth Singh", True, (0,0,0))
-        credit2 = font.render("Inspired by space arcade", True, (0,0,0))
+        credit1 = font.render("  Developed by Samarth Singh", True, (0,0,0))
+        credit2 = font.render("  Inspired by space arcade", True, (0,0,0))
         credit3 = font.render("Developed during Hash-Cade 2021",True,(0,0,0))
 
-        returnInstruct = font.render("Press 'ENTER' to go Back", True, (0,0,0))
+        returnInstruct = font.render("    Press 'ENTER' to go Back", True, (0,0,0))
         screen.blit(title, (100,50))
         screen.blit(credit1,(200,200))
         screen.blit(credit2,(200,240))
@@ -167,6 +174,21 @@ def isbossHit(bulletX, bulletY, bossX, bossY):
     return False
 
 
+class MaskPowerUP:
+    def __init__(self):
+        self.state = "idle"
+        self.value = 2
+        self.Img = pygame.image.load("mask.png")
+        self.X = random.randint(0,700)
+        self.Y = 0
+        self.speed = 0.3
+    
+    def show(self):
+        if(maskP.state == "falling"):
+            screen.blit(self.Img,(self.X,self.Y))
+
+
+
 enemyImgs = []
 enemyInitX = []
 enemyInitY = []
@@ -201,6 +223,10 @@ bulletState = "ready"
 playerImg = pygame.image.load("hand-sanitizer.png")
 initX = 370
 initY = 480
+
+def showBullets(x,y):
+    bulletStatus = font.render("Drops Rem- "+str(numBullets),True,(0,0,0))
+    screen.blit(bulletStatus, (x,y))
 
 def showLevel(x,y):
     if(currLevel < 5):
@@ -253,9 +279,15 @@ startGame = False
 
 gm = gameMenu()
 bv = BossVillian()
+maskP = MaskPowerUP()
+collectSound = mixer.Sound("collect.wav")
 
 while running:
 
+    if(maskP.state == "idle"):
+        if(random.randint(1,5000) == 5):
+            maskP.state = "falling"
+    
     screen.fill((0,0,0))
     screen.blit(backgroundImage,(0,0))
     if(startGame):
@@ -270,16 +302,24 @@ while running:
                     if event.key == pygame.K_RIGHT:
                         changeX = 0.5
                     if event.key == pygame.K_SPACE:
-                        if bulletState == "ready":
+                        if bulletState == "ready" and numBullets>0:
                             shootSound = mixer.Sound("shoot.wav")
                             shootSound.play()
                             bulletX = initX
                             bulletY = initY
                             fireBullet(bulletX, bulletY)
+                            numBullets -= 1
                 
                 elif event.type == pygame.KEYUP:
                     if event.key == pygame.K_LEFT or event.key == pygame.K_RIGHT:
                         changeX = 0
+
+            if(maskP.state == "falling" and maskP.Y > 800):
+                maskP.state = "idle"
+                maskP.Y = 0
+                maskP.X = random.randint(0,700)
+            if(maskP.state == "falling"):
+                maskP.Y += maskP.speed
             
             initX += changeX
             if(initX < 0):
@@ -320,6 +360,12 @@ while running:
                 fireBullet(bulletX, bulletY)
                 bulletY -= 0.7
 
+            if(isCollision(maskP.X, maskP.Y, initX, initY)):
+                collectSound.play()
+                numBullets += maskP.value
+                maskP.state = "idle"
+                maskP.Y = 0
+                maskP.X = random.randint(0,700)
 
             for i in range(levelAttr[currLevel-1][1]):
                 if(enemyState[i]):
@@ -347,7 +393,9 @@ while running:
                     bv.bossState = "dizzy"
 
             showScore(textX,textY)
+            showBullets(textX+500,textY)
             player(initX,initY)
+            maskP.show()
 
             if(currLevel == 5 and bv.health > 0):
                 bv.show()
@@ -362,11 +410,11 @@ while running:
                 gameWin = True
         elif(levelChange):
             showLevel(250,250)
+            numBullets = 10
             levelTimer += 1
             if(levelTimer>1000):
                 levelTimer = 0
                 InitializeEnemies(levelAttr[currLevel-1][1], currLevel)
-                print(enemyInitX)
                 enemiesAlive = levelAttr[currLevel-1][1]
                 levelChange = False
         elif(gameOver):

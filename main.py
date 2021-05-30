@@ -184,8 +184,21 @@ class MaskPowerUP:
         self.speed = 0.3
     
     def show(self):
-        if(maskP.state == "falling"):
+        if(self.state == "falling"):
             screen.blit(self.Img,(self.X,self.Y))
+
+class VaccinePowerUP:
+    def __init__(self):
+        self.state = "idle"
+        self.value = 5
+        self.Img = pygame.image.load("syringe.png")
+        self.X = random.randint(0,700)
+        self.Y = 0
+        self.speed = 0.3
+    
+    def show(self):
+        if(self.state == "falling"):
+            screen.blit(self.Img, (self.X, self.Y))
 
 
 
@@ -280,6 +293,7 @@ startGame = False
 gm = gameMenu()
 bv = BossVillian()
 maskP = MaskPowerUP()
+vaccineP = VaccinePowerUP()
 collectSound = mixer.Sound("collect.wav")
 
 while running:
@@ -287,6 +301,9 @@ while running:
     if(maskP.state == "idle"):
         if(random.randint(1,5000) == 5):
             maskP.state = "falling"
+    if(vaccineP.state == "idle"):
+        if(random.randint(1,7000) == 5):
+            vaccineP.state = "falling"
     
     screen.fill((0,0,0))
     screen.blit(backgroundImage,(0,0))
@@ -320,6 +337,13 @@ while running:
                 maskP.X = random.randint(0,700)
             if(maskP.state == "falling"):
                 maskP.Y += maskP.speed
+            
+            if(vaccineP.state == "falling" and vaccineP.Y > 800):
+                vaccineP.state = "idle"
+                vaccineP.Y = 0
+                vaccineP.X = random.randint(0,700)
+            if(vaccineP.state == "falling"):
+                vaccineP.Y += vaccineP.speed
             
             initX += changeX
             if(initX < 0):
@@ -366,6 +390,13 @@ while running:
                 maskP.state = "idle"
                 maskP.Y = 0
                 maskP.X = random.randint(0,700)
+            
+            if(isCollision(vaccineP.X, vaccineP.Y, initX, initY)):
+                collectSound.play()
+                numBullets += vaccineP.value
+                vaccineP.state = "idle"
+                vaccineP.Y = 0
+                vaccineP.X = random.randint(0,700)
 
             for i in range(levelAttr[currLevel-1][1]):
                 if(enemyState[i]):
@@ -396,6 +427,7 @@ while running:
             showBullets(textX+500,textY)
             player(initX,initY)
             maskP.show()
+            vaccineP.show()
 
             if(currLevel == 5 and bv.health > 0):
                 bv.show()

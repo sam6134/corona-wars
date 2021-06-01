@@ -1,4 +1,6 @@
 # Corona-Wars Arcade Game
+## :trophy: Achievements
+The **Best Video Game Remix** Award in **MLH Hack-Cade 2021**.<br /> <br />
 
 ### Official GamePlay Video
 
@@ -6,8 +8,7 @@
 [![Offical Gameplay Video](https://github.com/sam6134/corona-wars/blob/master/gameplay.png)](https://youtu.be/M3wZdYbtwfo "Gameplay Video- Click to Watch!")
 <!-- blank line -->
 
-## :trophy: Achievements
-The **Best Video Game Remix** Award in **MLH Hack-Cade 2021**.<br /> <br />
+
 
 Note the above code is not very organized (owing to the time constraints of hackathon) and currently is all in main.py file. <br /> Please follow the instructions to setup to play the game as per your System requirements.
 

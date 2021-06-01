@@ -5,7 +5,7 @@ pygame.init()
 
 screen = pygame.display.set_mode((800,600))
 pygame.display.set_caption("Corona Wars")
-icon = pygame.image.load("logo.png")
+icon = pygame.image.load("assets/img/logo.png")
 pygame.display.set_icon(icon)
 
 levelAttr = [[0.5,5],[0.6,6],[0.7,7],[0.8,7],[0.7,6]]
@@ -13,16 +13,16 @@ currLevel = 1
 
 numBullets = 10
 scoreValue = 0
-font = pygame.font.Font("gameFont.ttf", 32)
-instructionFont = pygame.font.Font("gameFont.ttf",24)
-levelFont = pygame.font.Font("gameFont.ttf", 64)
-titleFont = pygame.font.Font("gameFont.ttf", 72)
+font = pygame.font.Font("assets/font/gameFont.ttf", 32)
+instructionFont = pygame.font.Font("assets/font/gameFont.ttf",24)
+levelFont = pygame.font.Font("assets/font/gameFont.ttf", 64)
+titleFont = pygame.font.Font("assets/font/gameFont.ttf", 72)
 textX = 10
 textY = 10
 
-backgroundImage = pygame.image.load("background.png")
+backgroundImage = pygame.image.load("assets/img/background.png")
 
-mixer.music.load("background.mp3")
+mixer.music.load("assets/sound/background.mp3")
 mixer.music.play(-1)
 
 menuPositions = {
@@ -52,7 +52,7 @@ class gameMenu:
         self.cursorY = menuPositions["start"]["y"]
     
     def goDown(self):
-        shootSound = mixer.Sound("shoot.wav")
+        shootSound = mixer.Sound("assets/sound/shoot.wav")
         shootSound.play()
         if(self.state == "start"):
             self.state = "instructions"
@@ -70,7 +70,7 @@ class gameMenu:
             self.cursorY = menuPositions["quit"]["y"]
     
     def goUp(self):
-        shootSound = mixer.Sound("shoot.wav")
+        shootSound = mixer.Sound("assets/sound/shoot.wav")
         shootSound.play()
         if(self.state == "instructions"):
             self.state = "start"
@@ -141,8 +141,8 @@ class gameMenu:
         
 class BossVillian:
     def __init__(self):
-        self.Img = pygame.image.load("boss.png")
-        self.dizzyImg = pygame.image.load("dizzy.png")
+        self.Img = pygame.image.load("assets/img/boss.png")
+        self.dizzyImg = pygame.image.load("assets/img/dizzy.png")
         self.bossX = random.randint(200,400)
         self.bossY = random.randint(50,60)
         self.health = 5
@@ -150,7 +150,7 @@ class BossVillian:
         self.bossYchange = 20
         self.bossState = "good"
         self.dizzyTimer = 0
-        self.sound = mixer.Sound("boss.wav")
+        self.sound = mixer.Sound("assets/sound/boss.wav")
     
     def show(self):
         self.sound.set_volume(0.1)
@@ -178,7 +178,7 @@ class MaskPowerUP:
     def __init__(self):
         self.state = "idle"
         self.value = 2
-        self.Img = pygame.image.load("mask.png")
+        self.Img = pygame.image.load("assets/img/mask.png")
         self.X = random.randint(0,700)
         self.Y = 0
         self.speed = 0.3
@@ -191,7 +191,7 @@ class VaccinePowerUP:
     def __init__(self):
         self.state = "idle"
         self.value = 5
-        self.Img = pygame.image.load("syringe.png")
+        self.Img = pygame.image.load("assets/img/syringe.png")
         self.X = random.randint(0,700)
         self.Y = 0
         self.speed = 0.3
@@ -218,7 +218,7 @@ def InitializeEnemies(numEnemies, lvl):
     enemyXchange.clear()
     enemyYchange.clear()
     for _ in range(numEnemies):
-        enemyImgs.append(pygame.image.load("coronavirus.png"))
+        enemyImgs.append(pygame.image.load("assets/img/coronavirus.png"))
         enemyInitX.append(random.randint(0,700))
         enemyInitY.append(random.randint(50,150))
         enemyState.append(1)
@@ -228,12 +228,12 @@ def InitializeEnemies(numEnemies, lvl):
 
 
 
-bulletImg = pygame.image.load("drop.png")
+bulletImg = pygame.image.load("assets/img/drop.png")
 bulletX = 370
 bulletY = 480
 bulletState = "ready"
 
-playerImg = pygame.image.load("hand-sanitizer.png")
+playerImg = pygame.image.load("assets/img/hand-sanitizer.png")
 initX = 370
 initY = 480
 
@@ -294,7 +294,7 @@ gm = gameMenu()
 bv = BossVillian()
 maskP = MaskPowerUP()
 vaccineP = VaccinePowerUP()
-collectSound = mixer.Sound("collect.wav")
+collectSound = mixer.Sound("assets/sound/collect.wav")
 
 while running:
 
@@ -320,7 +320,7 @@ while running:
                         changeX = 0.5
                     if event.key == pygame.K_SPACE:
                         if bulletState == "ready" and numBullets>0:
-                            shootSound = mixer.Sound("shoot.wav")
+                            shootSound = mixer.Sound("assets/sound/shoot.wav")
                             shootSound.play()
                             bulletX = initX
                             bulletY = initY
@@ -402,7 +402,7 @@ while running:
                 if(enemyState[i]):
                     collisionState = isCollision(bulletX, bulletY, enemyInitX[i], enemyInitY[i])
                     if(collisionState):
-                        killSound = mixer.Sound("kill.wav")
+                        killSound = mixer.Sound("assets/sound/kill.wav")
                         killSound.play()
                         bulletX = 370
                         bulletY = 480
@@ -414,7 +414,7 @@ while running:
             if(currLevel == 5 and bv.health>0):
                 bossHit = isbossHit(bulletX, bulletY, bv.bossX, bv.bossY)
                 if(bossHit):
-                    killSound = mixer.Sound("kill.wav")
+                    killSound = mixer.Sound("assets/sound/kill.wav")
                     killSound.play()
                     bulletX = 370
                     bulletY = 480
@@ -490,7 +490,7 @@ while running:
                         if event.key == pygame.K_UP:
                             upPress = True
                         if event.key == pygame.K_RETURN:
-                            shootSound = mixer.Sound("shoot.wav")
+                            shootSound = mixer.Sound("assets/sound/shoot.wav")
                             shootSound.play()
                             if(gm.state == "start"):
                                 startGame = True
@@ -515,7 +515,7 @@ while running:
                         running = False
                     elif event.type == pygame.KEYDOWN:
                         if(event.key == pygame.K_RETURN):
-                            shootSound = mixer.Sound("shoot.wav")
+                            shootSound = mixer.Sound("assets/sound/shoot.wav")
                             shootSound.play()
                             gm.mode = "main"
 
